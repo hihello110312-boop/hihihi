@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선물 뽑기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-1: #FFE8D6;
+    --bg-2: #FFD6E8;
+    --bg-3: #D6F0FF;
+    --ink: #2B2640;
+    --ink-soft: #6E6685;
+    --gift1: #FF4D8D;
+    --gift1-dark: #C71F63;
+    --gift1-light: #FFE0EC;
+    --gift2: #2F8CFF;
+    --gift2-dark: #1857A8;
+    --gift2-light: #DCEEFF;
+    --yellow: #FFC93C;
+    --green: #3CCB7F;
+    --white: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 12% 18%, var(--bg-3) 0%, transparent 38%),
+      radial-gradient(circle at 88% 12%, var(--bg-2) 0%, transparent 42%),
+      radial-gradient(circle at 50% 90%, var(--bg-1) 0%, transparent 45%),
+      #FFF6EC;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", sans-serif;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    overflow-x: hidden;
+  }
+
+  .stage {
+    width: 100%;
+    max-width: 980px;
+  }
+
+  /* ---------- 헤더 ---------- */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .title {
+    font-family: "Jua", "Inter", sans-serif;
+    font-size: clamp(34px, 5vw, 52px);
+    color: var(--ink);
+    margin: 0 0 8px;
+    letter-spacing: 1px;
+  }
+
+  .title .accent {
+    color: var(--gift1);
+  }
+
+  .subtitle {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .progress-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  .progress-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    border: 2px solid transparent;
+  }
+
+  .progress-pill.g1 {
+    background: var(--gift1-light);
+    color: var(--gift1-dark);
+    border-color: var(--gift1);
+  }
+
+  .progress-pill.g2 {
+    background: var(--gift2-light);
+    color: var(--gift2-dark);
+    border-color: var(--gift2);
+  }
+
+  .progress-pill .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .progress-pill.g1 .dot { background: var(--gift1); }
+  .progress-pill.g2 .dot { background: var(--gift2); }
+
+  /* ---------- 카드 그리드 ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .card {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 28px;
+    border: none;
+    cursor: pointer;
+    background: var(--white);
+    box-shadow: 0 4px 0 rgba(43,38,64,0.12), 0 10px 24px rgba(43,38,64,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+    font-family: "Jua", sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .card:hover:not(:disabled) {
+    transform: translateY(-6px) scale(1.04) rotate(-2deg);
+    box-shadow: 0 8px 0 rgba(43,38,64,0.14), 0 18px 30px rgba(43,38,64,0.12);
+  }
+
+  .card:active:not(:disabled) {
+    transform: translateY(0px) scale(0.96);
+    box-shadow: 0 2px 0 rgba(43,38,64,0.12), 0 6px 14px rgba(43,38,64,0.1);
+  }
+
+  .card .num {
+    font-size: 32px;
+    line-height: 1;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #FFF1D6, #FFE0A8);
+    color: var(--ink);
+    box-shadow: inset 0 -3px 0 rgba(43,38,64,0.08);
+  }
+
+  .card.done .num { display: flex; }
+
+  .card.done.result1 .num {
+    background: linear-gradient(160deg, #FFD3E4, var(--gift1-light));
+  }
+
+  .card.done.result2 .num {
+    background: linear-gradient(160deg, #D3E8FF, var(--gift2-light));
+  }
+
+  .card.idle {
+    background: var(--white);
+  }
+
+  .card.idle .num { color: var(--ink); }
+
+  .card.picking {
+    cursor: default;
+    animation: cardBounce 0.3s ease-in-out infinite;
+  }
+
+  @keyframes cardBounce {
+    0%, 100% { transform: scale(1.04) rotate(-3deg) translateY(0); }
+    50% { transform: scale(1.08) rotate(3deg) translateY(-6px); }
+  }
+
+  .card.done {
+    cursor: not-allowed;
+  }
+
+  .card.done.result1 {
+    background: var(--gift1-light);
+    box-shadow: 0 4px 0 rgba(199,31,99,0.2), 0 8px 18px rgba(199,31,99,0.12);
+  }
+
+  .card.done.result1 .num,
+  .card.done.result1 .badge {
+    color: var(--gift1-dark);
+  }
+
+  .card.done.result2 {
+    background: var(--gift2-light);
+    box-shadow: 0 4px 0 rgba(24,87,168,0.2), 0 8px 18px rgba(24,87,168,0.12);
+  }
+
+  .card.done.result2 .num,
+  .card.done.result2 .badge {
+    color: var(--gift2-dark);
+  }
+
+  .card.done .label { display: none; }
+
+  .card .badge {
+    font-family: "Jua", sans-serif;
+    font-size: 13px;
+    margin-top: 2px;
+    background: var(--white);
+    padding: 4px 14px;
+    border-radius: 999px;
+  }
+
+  .card .check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 16px;
+  }
+
+  .card.done.result1 .check { color: var(--gift1); }
+  .card.done.result2 .check { color: var(--gift2); }
+
+  /* ---------- 하단 컨트롤 ---------- */
+  .footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+  }
+
+  .reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--white);
+    border: 2px solid #EDE7F6;
+    color: var(--ink-soft);
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .reset-btn:hover {
+    background: #FFF0F5;
+    border-color: var(--gift1);
+    color: var(--gift1-dark);
+  }
+
+  /* ---------- 결과 오버레이 ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(43,38,64,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .result-card {
+    background: var(--white);
+    border-radius: 36px;
+    padding: 48px 56px;
+    text-align: center;
+    min-width: 320px;
+    transform: scale(0.7);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: visible;
+  }
+
+  .overlay.show .result-card {
+    transform: scale(1);
+  }
+
+  .result-eyebrow {
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0 0 12px;
+    letter-spacing: 1px;
+  }
+
+  .result-slot {
+    font-family: "Jua", sans-serif;
+    font-size: 64px;
+    line-height: 1;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+  }
+
+  .result-slot.spin {
+    animation: slotSpin 0.1s linear infinite;
+  }
+
+  @keyframes slotSpin {
+    0% { transform: translateY(-4px); opacity: 0.5; }
+    50% { transform: translateY(4px); opacity: 1; }
+    100% { transform: translateY(-4px); opacity: 0.5; }
+  }
+
+  .result-slot.final.r1 { color: var(--gift1); }
+  .result-slot.final.r2 { color: var(--gift2); }
+
+  .result-caption {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 14px 0 24px;
+  }
+
+  .close-btn {
+    font-family: "Inter", sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--white);
+    background: var(--ink);
+    border: none;
+    border-radius: 999px;
+    padding: 12px 32px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+  }
+
+  .close-btn.show { opacity: 1; }
+  .close-btn:active { transform: scale(0.96); }
+
+  .confetti-piece {
+    position: absolute;
+    top: -10px;
+    border-radius: 2px;
+    opacity: 0;
+  }
+
+  /* ---------- 완료 요약 화면 ---------- */
+  .summary {
+    text-align: center;
+  }
+
+  .summary-title {
+    font-family: "Jua", sans-serif;
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 28px;
+  }
+
+  .summary-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 560px) {
+    .summary-cols { grid-template-columns: 1fr; }
+  }
+
+  .summary-col {
+    border-radius: 22px;
+    padding: 24px 20px;
+  }
+
+  .summary-col.s1 { background: var(--gift1-light); }
+  .summary-col.s2 { background: var(--gift2-light); }
+
+  .summary-col-title {
+    font-family: "Jua", sans-serif;
+    font-size: 20px;
+    margin: 0 0 14px;
+  }
+
+  .summary-col.s1 .summary-col-title { color: var(--gift1-dark); }
+  .summary-col.s2 .summary-col-title { color: var(--gift2-dark); }
+
+  .summary-nums {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .summary-num {
+    font-family: "Jua", sans-serif;
+    font-size: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    box-shadow: inset 0 -3px 0 rgba(43,38,64,0.06);
+  }
+
+  .summary-col.s1 .summary-num { color: var(--gift1-dark); }
+  .summary-col.s2 .summary-num { color: var(--gift2-dark); }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div id="mainView">
+    <div class="header">
+      <h1 class="title">선물 <span class="accent">뽑기</span></h1>
+      <p class="subtitle">번호를 콕 눌러서 선물을 확인해보세요!</p>
+      <div class="progress-row">
+        <div class="progress-pill g1"><span class="dot"></span><span id="count1">1번 선물 5개 남음</span></div>
+        <div class="progress-pill g2"><span class="dot"></span><span id="count2">2번 선물 5개 남음</span></div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="footer">
+      <button class="reset-btn" id="resetBtn"><i class="ti ti-refresh"></i>처음부터 다시</button>
+    </div>
+  </div>
+
+  <div id="summaryView" style="display:none;"></div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card" id="resultCard">
+    <p class="result-eyebrow" id="resultEyebrow">두구두구두구</p>
+    <div class="result-slot" id="resultSlot">?</div>
+    <p class="result-caption" id="resultCaption"></p>
+    <button class="close-btn" id="closeBtn">확인했어요</button>
+  </div>
+</div>
+
+<script>
+  const TOTAL = 10;
+  const PER_GROUP = 5;
+
+  let pool = [];
+  let drawn = {};
+  let activeNum = null;
+
+  const grid = document.getElementById('grid');
+  const count1El = document.getElementById('count1');
+  const count2El = document.getElementById('count2');
+  const overlay = document.getElementById('overlay');
+  const resultCard = document.getElementById('resultCard');
+  const resultEyebrow = document.getElementById('resultEyebrow');
+  const resultSlot = document.getElementById('resultSlot');
+  const resultCaption = document.getElementById('resultCaption');
+  const closeBtn = document.getElementById('closeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const mainView = document.getElementById('mainView');
+  const summaryView = document.getElementById('summaryView');
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function initPool() {
+    const base = [];
+    for (let i = 0; i < PER_GROUP; i++) base.push(1);
+    for (let i = 0; i < PER_GROUP; i++) base.push(2);
+    pool = shuffle(base);
+  }
+
+  function buildGrid() {
+    grid.innerHTML = '';
+    for (let n = 1; n <= TOTAL; n++) {
+      const btn = document.createElement('button');
+      btn.className = 'card idle';
+      btn.id = 'card-' + n;
+      btn.innerHTML = `
+        <span class="check"><i class="ti ti-check" style="display:none;"></i></span>
+        <span class="num">${n}</span>
+        <span class="badge"></span>
+      `;
+      btn.addEventListener('click', () => onDraw(n));
+      grid.appendChild(btn);
+    }
+  }
+
+  function updateCounts() {
+    const remaining1 = pool.filter(v => v === 1).length;
+    const remaining2 = pool.filter(v => v === 2).length;
+    count1El.textContent = `1번 선물 ${remaining1}개 남음`;
+    count2El.textContent = `2번 선물 ${remaining2}개 남음`;
+  }
+
+  function onDraw(n) {
+    if (drawn[n] || activeNum !== null) return;
+    activeNum = n;
+
+    const card = document.getElementById('card-' + n);
+    card.classList.remove('idle');
+    card.classList.add('picking');
+    card.disabled = true;
+
+    overlay.classList.add('show');
+    resultEyebrow.textContent = '두구두구두구';
+    resultSlot.className = 'result-slot spin';
+    resultSlot.textContent = ['1', '2'][Math.floor(Math.random() * 2)];
+    resultCaption.textContent = '';
+    closeBtn.classList.remove('show');
+
+    let spins = 0;
+    const spinInterval = setInterval(() => {
+      resultSlot.textContent = Math.random() < 0.5 ? '1' : '2';
+      spins++;
+    }, 90);
+
+    setTimeout(() => {
+      clearInterval(spinInterval);
+      const result = pool.pop();
+      drawn[n] = result;
+      updateCounts();
+
+      resultSlot.className = 'result-slot final r' + result;
+      resultSlot.textContent = result;
+      resultEyebrow.textContent = n + '번의 선물은?';
+      resultCaption.textContent = result === 1 ? '1번 선물 당첨!' : '2번 선물 당첨!';
+      launchConfetti(result);
+      closeBtn.classList.add('show');
+
+      card.classList.remove('picking');
+      card.classList.add('done', 'result' + result);
+      card.querySelector('.num').textContent = n;
+      card.querySelector('.badge').textContent = result + '번 선물';
+      card.querySelector('.check i').style.display = 'inline';
+    }, 1500);
+  }
+
+  function closeResult() {
+    overlay.classList.remove('show');
+    activeNum = null;
+    if (Object.keys(drawn).length === TOTAL) {
+      setTimeout(showSummary, 300);
+    }
+  }
+
+  closeBtn.addEventListener('click', closeResult);
+
+  function launchConfetti(result) {
+    const colors = result === 1
+      ? ['#FF4D8D', '#FFC93C', '#FF8FB6']
+      : ['#2F8CFF', '#3CCB7F', '#8FC4FF'];
+    const count = 26;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const size = 6 + Math.random() * 6;
+      piece.style.width = size + 'px';
+      piece.style.height = (size * 0.4) + 'px';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.left = (50 + (Math.random() * 70 - 35)) + '%';
+      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      resultCard.appendChild(piece);
+
+      const dx = (Math.random() * 240 - 120);
+      const dy = 220 + Math.random() * 140;
+      const dur = 700 + Math.random() * 500;
+
+      piece.animate([
+        { transform: `translate(0,0) rotate(0deg)`, opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${360 + Math.random() * 360}deg)`, opacity: 0 }
+      ], {
+        duration: dur,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        fill: 'forwards'
+      });
+
+      setTimeout(() => piece.remove(), dur + 50);
+    }
+  }
+
+  function showSummary() {
+    mainView.style.display = 'none';
+    summaryView.style.display = 'block';
+
+    const g1 = Object.keys(drawn).filter(n => drawn[n] === 1).sort((a,b) => a-b);
+    const g2 = Object.keys(drawn).filter(n => drawn[n] === 2).sort((a,b) => a-b);
+
+    summaryView.innerHTML = `
+      <div class="summary">
+        <h2 class="summary-title">전체 결과 발표!</h2>
+        <div class="summary-cols">
+          <div class="summary-col s1">
+            <p class="summary-col-title">1번 선물</p>
+            <div class="summary-nums">
+              ${g1.map(n => `<span class="summary-num">${n}</span>`).join('')}
+            </div>
+          </div>
+          <div class="summary-col s2">
+            <p class="summary-col-title">2번 선물</p>
+            <div class="summary-nums">
+              ${g2.map(n => `<span class="summary-num">${n}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <button class="reset-btn" id="resetBtn2"><i class="ti ti-refresh"></i>처음부터 다시</button>
+      </div>
+    `;
+    document.getElementById('resetBtn2').addEventListener('click', resetAll);
+  }
+
+  function resetAll() {
+    drawn = {};
+    activeNum = null;
+    initPool();
+    updateCounts();
+    buildGrid();
+    mainView.style.display = 'block';
+    summaryView.style.display = 'none';
+  }
+
+  resetBtn.addEventListener('click', resetAll);
+
+  initPool();
+  updateCounts();
+  buildGrid();
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+</body>
+</html>
