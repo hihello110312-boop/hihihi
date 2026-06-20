@@ -128,7 +128,7 @@
   .card {
     position: relative;
     aspect-ratio: 1 / 1;
-    border-radius: 20px;
+    border-radius: 28px;
     border: none;
     cursor: pointer;
     background: var(--white);
@@ -137,34 +137,45 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    gap: 6px;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
     font-family: "Jua", sans-serif;
     color: var(--ink);
     overflow: hidden;
   }
 
   .card:hover:not(:disabled) {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 0 rgba(43,38,64,0.14), 0 16px 28px rgba(43,38,64,0.12);
+    transform: translateY(-6px) scale(1.04) rotate(-2deg);
+    box-shadow: 0 8px 0 rgba(43,38,64,0.14), 0 18px 30px rgba(43,38,64,0.12);
   }
 
   .card:active:not(:disabled) {
-    transform: translateY(0px);
+    transform: translateY(0px) scale(0.96);
     box-shadow: 0 2px 0 rgba(43,38,64,0.12), 0 6px 14px rgba(43,38,64,0.1);
   }
 
   .card .num {
-    font-size: 30px;
+    font-size: 32px;
     line-height: 1;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #FFF1D6, #FFE0A8);
+    color: var(--ink);
+    box-shadow: inset 0 -3px 0 rgba(43,38,64,0.08);
   }
 
-  .card .label {
-    font-family: "Inter", sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--ink-soft);
-    letter-spacing: 0.5px;
+  .card.done .num { display: flex; }
+
+  .card.done.result1 .num {
+    background: linear-gradient(160deg, #FFD3E4, var(--gift1-light));
+  }
+
+  .card.done.result2 .num {
+    background: linear-gradient(160deg, #D3E8FF, var(--gift2-light));
   }
 
   .card.idle {
@@ -175,13 +186,12 @@
 
   .card.picking {
     cursor: default;
-    animation: cardShake 0.12s linear infinite;
+    animation: cardBounce 0.3s ease-in-out infinite;
   }
 
-  @keyframes cardShake {
-    0%, 100% { transform: rotate(0deg) scale(1.02); }
-    25% { transform: rotate(-2deg) scale(1.02); }
-    75% { transform: rotate(2deg) scale(1.02); }
+  @keyframes cardBounce {
+    0%, 100% { transform: scale(1.04) rotate(-3deg) translateY(0); }
+    50% { transform: scale(1.08) rotate(3deg) translateY(-6px); }
   }
 
   .card.done {
@@ -214,6 +224,9 @@
     font-family: "Jua", sans-serif;
     font-size: 13px;
     margin-top: 2px;
+    background: var(--white);
+    padding: 4px 14px;
+    border-radius: 999px;
   }
 
   .card .check {
@@ -276,7 +289,7 @@
 
   .result-card {
     background: var(--white);
-    border-radius: 28px;
+    border-radius: 36px;
     padding: 48px 56px;
     text-align: center;
     min-width: 320px;
@@ -404,13 +417,14 @@
   .summary-num {
     font-family: "Jua", sans-serif;
     font-size: 18px;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--white);
+    box-shadow: inset 0 -3px 0 rgba(43,38,64,0.06);
   }
 
   .summary-col.s1 .summary-num { color: var(--gift1-dark); }
@@ -424,7 +438,7 @@
   <div id="mainView">
     <div class="header">
       <h1 class="title">선물 <span class="accent">뽑기</span></h1>
-      <p class="subtitle">번호를 눌러서 어떤 선물인지 확인해보세요!</p>
+      <p class="subtitle">번호를 콕 눌러서 선물을 확인해보세요!</p>
       <div class="progress-row">
         <div class="progress-pill g1"><span class="dot"></span><span id="count1">1번 선물 5개 남음</span></div>
         <div class="progress-pill g2"><span class="dot"></span><span id="count2">2번 선물 5개 남음</span></div>
@@ -496,7 +510,6 @@
       btn.innerHTML = `
         <span class="check"><i class="ti ti-check" style="display:none;"></i></span>
         <span class="num">${n}</span>
-        <span class="label">번 아이</span>
         <span class="badge"></span>
       `;
       btn.addEventListener('click', () => onDraw(n));
@@ -541,7 +554,7 @@
 
       resultSlot.className = 'result-slot final r' + result;
       resultSlot.textContent = result;
-      resultEyebrow.textContent = n + '번 아이의 선물은?';
+      resultEyebrow.textContent = n + '번의 선물은?';
       resultCaption.textContent = result === 1 ? '1번 선물 당첨!' : '2번 선물 당첨!';
       launchConfetti(result);
       closeBtn.classList.add('show');
